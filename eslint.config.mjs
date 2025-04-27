@@ -9,6 +9,13 @@ export default defineConfig([
   { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"], plugins: { js }, extends: ["js/recommended"] },
   { files: ["**/*.js"], languageOptions: { sourceType: "commonjs" } },
   { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"], languageOptions: { globals: globals.browser } },
+  // .eslintrc.json
+  {
+    "rules": {
+      "@typescript-eslint/no-explicit-any": "warn",
+      "react/react-in-jsx-scope": "off"
+    }
+  },
   tseslint.configs.recommended,
   pluginReact.configs.flat.recommended,
 ]);

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
+ 
 /* eslint-disable react/react-in-jsx-scope */
 import Agent from "@/components/Agent";
 import { getCurrentUser } from "@/lib/actions/auth.action";
