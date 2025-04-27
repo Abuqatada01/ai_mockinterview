@@ -1,4 +1,3 @@
-/* eslint-disable react/react-in-jsx-scope */
 import { Toaster } from "sonner";
 import type { Metadata } from "next";
 import { Mona_Sans } from "next/font/google";
