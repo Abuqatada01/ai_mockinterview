@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { vapi } from "@/lib/vapi.sdk";
+import { interviewer } from "@/constants";
 
 enum CallStatus {
   INACTIVE = "INACTIVE",
@@ -18,25 +19,17 @@ interface SavedMessage {
   content: string;
 }
 
-interface Message {
-  type: string;
-  role: "user" | "assistant" | "system";
-  transcriptType: string;
-  transcript: string;
-}
-
-interface AgentProps {
-  userName: string;
-  userId: string;
-  type: string;
-}
-
-const Agent = ({ userName, userId, type }: AgentProps) => {
+const Agent = ({
+  userName,
+  userId,
+  type,
+  interviewId,
+  questions,
+}: AgentProps) => {
   const router = useRouter();
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
   const [messages, setMessages] = useState<SavedMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const onCallStart = () => setCallStatus(CallStatus.ACTIVE);
@@ -45,6 +38,7 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
     const onMessage = (message: Message) => {
       if (message.type === "transcript" && message.transcriptType === "final") {
         const newMessage = { role: message.role, content: message.transcript };
+
         setMessages((prev) => [...prev, newMessage]);
       }
     };
@@ -52,10 +46,7 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
     const onSpeechStart = () => setIsSpeaking(true);
     const onSpeechEnd = () => setIsSpeaking(false);
 
-    const onError = (error: Error) => {
-      console.error("Error", error);
-      setCallStatus(CallStatus.INACTIVE); // Reset call status on error
-    };
+    const onError = (error: Error) => console.log("Error", error);
 
     vapi.on("call-start", onCallStart);
     vapi.on("call-end", onCallEnd);
@@ -74,31 +65,63 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
     };
   }, []);
 
+  const handleGenerateFeedback = async (messages: SavedMessage[]) => {
+    console.log("Generate feedback here.");
+
+    // TODO: Create a server action that generates feedback
+    const { success, id } = {
+      success: true,
+      id: "feedback-id",
+    };
+
+    if (success && id) {
+      router.push(`/interview/${interviewId}/feedback`);
+    } else {
+      console.log("Error saving feedback");
+      router.push("/");
+    }
+  };
+
   useEffect(() => {
-    if (callStatus === CallStatus.FINISHED) router.push("/");
+    if (callStatus === CallStatus.FINISHED) {
+      if (type === "generate") {
+        router.push("/");
+      } else {
+        handleGenerateFeedback(messages);
+      }
+    }
   }, [messages, callStatus, type, userId]);
 
   const handleCall = async () => {
-    setIsLoading(true); // Start loading
     setCallStatus(CallStatus.CONNECTING);
 
-    try {
+    if (type === "generate") {
       await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
         variableValues: {
           username: userName,
           userid: userId,
         },
       });
-    } catch (error) {
-      console.error("Error starting the call:", error);
-      setCallStatus(CallStatus.INACTIVE); // Reset to inactive on error
-    } finally {
-      setIsLoading(false); // End loading
+    } else {
+      let formattedQuestions = "";
+
+      if (questions) {
+        formattedQuestions = questions
+          .map((question) => `- ${question}`)
+          .join("\n");
+      }
+
+      await vapi.start(interviewer, {
+        variableValues: {
+          questions: formattedQuestions,
+        },
+      });
     }
   };
 
   const handleDisconnect = async () => {
     setCallStatus(CallStatus.FINISHED);
+
     vapi.stop();
   };
 
@@ -136,7 +159,6 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
           </div>
         </div>
       </div>
-
       {messages.length > 0 && (
         <div className="transcript-border">
           <div className="transcript">
@@ -154,18 +176,15 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
       )}
 
       <div className="w-full flex justify-center">
-        {callStatus !== CallStatus.ACTIVE ? (
-          <button
-            className="relative btn-call"
-            onClick={handleCall}
-            disabled={isLoading || callStatus === CallStatus.CONNECTING}
-          >
+        {callStatus !== "ACTIVE" ? (
+          <button className="relative btn-call" onClick={handleCall}>
             <span
               className={cn(
                 "absolute animate-ping rounded-full opacity-75",
-                callStatus !== CallStatus.CONNECTING && "hidden"
+                callStatus !== "CONNECTING" && "hidden"
               )}
             />
+
             <span>{isCallInactiveOrFinished ? "Call" : ". . ."}</span>
           </button>
         ) : (
@@ -177,5 +196,4 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
     </>
   );
 };
-
 export default Agent;
