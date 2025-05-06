@@ -15,6 +15,12 @@ enum CallStatus {
   ACTIVE = "ACTIVE",
   FINISHED = "FINISHED",
 }
+type Message = {
+  type: "transcript";
+  role: "user" | "system" | "assistant";
+  transcript: string;
+  transcriptType: "final" | "interim";
+};
 
 interface SavedMessage {
   role: "user" | "system" | "assistant";
