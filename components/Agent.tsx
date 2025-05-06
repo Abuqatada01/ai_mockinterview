@@ -19,6 +19,11 @@ interface SavedMessage {
   role: "user" | "system" | "assistant";
   content: string;
 }
+interface CreateFeedbackParams {
+  interviewId?: string;
+  userId: string;
+  transcript: SavedMessage[];
+}
 
 const Agent = ({
   userName,
@@ -69,8 +74,12 @@ const Agent = ({
   const handleGenerateFeedback = async (messages: SavedMessage[]) => {
     console.log("Generate feedback here.");
 
-    const { success, feedbackId: id } = await createFeedback({
-      interviewId: interviewId!,
+    const {
+      success,
+      feedbackId,
+      interviewId: newInterviewId,
+    } = await createFeedback({
+      ...(interviewId && { interviewId }),
       userId: userId!,
       transcript: messages,
     });
@@ -85,13 +94,9 @@ const Agent = ({
 
   useEffect(() => {
     if (callStatus === CallStatus.FINISHED) {
-      if (type === "generate") {
-        router.push("/");
-      } else {
-        handleGenerateFeedback(messages);
-      }
+      handleGenerateFeedback(messages);
     }
-  }, [messages, callStatus, type, userId]);
+  }, [messages, callStatus, userId]);
 
   const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
