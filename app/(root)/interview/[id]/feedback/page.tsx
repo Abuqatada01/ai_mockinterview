@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
-/* eslint-disable react/react-in-jsx-scope */
 import dayjs from "dayjs";
 import Link from "next/link";
 import Image from "next/image";
@@ -12,27 +9,8 @@ import {
 } from "@/lib/actions/general.action";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/actions/auth.action";
-import {
-  ReactElement,
-  JSXElementConstructor,
-  ReactNode,
-  ReactPortal,
-  Key,
-} from "react";
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
-
-interface User {
-  uid: string;
-  displayName: string | null;
-  email: string | null;
-}
-
-const Feedback = async ({ params }: RouteParams) => {
+const Page = async ({ params }: RouteParams) => {
   const { id } = await params;
   const user = await getCurrentUser();
 
@@ -53,9 +31,8 @@ const Feedback = async ({ params }: RouteParams) => {
         </h1>
       </div>
 
-      <div className="flex flex-row justify-center ">
+      <div className="flex flex-row justify-center">
         <div className="flex flex-row gap-5">
-          {/* Overall Impression */}
           <div className="flex flex-row gap-2 items-center">
             <Image src="/star.svg" width={22} height={22} alt="star" />
             <p>
@@ -67,7 +44,6 @@ const Feedback = async ({ params }: RouteParams) => {
             </p>
           </div>
 
-          {/* Date */}
           <div className="flex flex-row gap-2">
             <Image src="/calendar.svg" width={22} height={22} alt="calendar" />
             <p>
@@ -83,119 +59,24 @@ const Feedback = async ({ params }: RouteParams) => {
 
       <p>{feedback?.finalAssessment}</p>
 
-      {/* Interview Breakdown */}
       <div className="flex flex-col gap-4">
         <h2>Breakdown of the Interview:</h2>
-        {feedback?.categoryScores?.map(
-          (
-            category: {
-              name:
-                | string
-                | number
-                | bigint
-                | boolean
-                | ReactElement<unknown, string | JSXElementConstructor<any>>
-                | Iterable<ReactNode>
-                | ReactPortal
-                | Promise<
-                    | string
-                    | number
-                    | bigint
-                    | boolean
-                    | ReactPortal
-                    | ReactElement<unknown, string | JSXElementConstructor<any>>
-                    | Iterable<ReactNode>
-                    | null
-                    | undefined
-                  >
-                | null
-                | undefined;
-              score:
-                | string
-                | number
-                | bigint
-                | boolean
-                | ReactElement<unknown, string | JSXElementConstructor<any>>
-                | Iterable<ReactNode>
-                | ReactPortal
-                | Promise<
-                    | string
-                    | number
-                    | bigint
-                    | boolean
-                    | ReactPortal
-                    | ReactElement<unknown, string | JSXElementConstructor<any>>
-                    | Iterable<ReactNode>
-                    | null
-                    | undefined
-                  >
-                | null
-                | undefined;
-              comment:
-                | string
-                | number
-                | bigint
-                | boolean
-                | ReactElement<unknown, string | JSXElementConstructor<any>>
-                | Iterable<ReactNode>
-                | ReactPortal
-                | Promise<
-                    | string
-                    | number
-                    | bigint
-                    | boolean
-                    | ReactPortal
-                    | ReactElement<unknown, string | JSXElementConstructor<any>>
-                    | Iterable<ReactNode>
-                    | null
-                    | undefined
-                  >
-                | null
-                | undefined;
-            },
-            index: Key | null | undefined
-          ) => (
-            <div key={index}>
-              <p className="font-bold">
-                {index + 1}. {category.name} ({category.score}/100)
-              </p>
-              <p>{category.comment}</p>
-            </div>
-          )
-        )}
+        {feedback?.categoryScores?.map((category, index) => (
+          <div key={index}>
+            <p className="font-bold">
+              {index + 1}. {category.name} ({category.score}/100)
+            </p>
+            <p>{category.comment}</p>
+          </div>
+        ))}
       </div>
 
       <div className="flex flex-col gap-3">
         <h3>Strengths</h3>
         <ul>
-          {feedback?.strengths?.map(
-            (
-              strength:
-                | string
-                | number
-                | bigint
-                | boolean
-                | ReactElement<unknown, string | JSXElementConstructor<any>>
-                | Iterable<ReactNode>
-                | ReactPortal
-                | Promise<
-                    | string
-                    | number
-                    | bigint
-                    | boolean
-                    | ReactPortal
-                    | ReactElement<unknown, string | JSXElementConstructor<any>>
-                    | Iterable<ReactNode>
-                    | null
-                    | undefined
-                  >
-                | null
-                | undefined,
-              index: Key | null | undefined
-            ) => (
-              <li key={index}>{strength}</li>
-            )
-          )}
+          {feedback?.strengths?.map((strength, index) => (
+            <li key={index}>{strength}</li>
+          ))}
         </ul>
       </div>
 
@@ -231,5 +112,4 @@ const Feedback = async ({ params }: RouteParams) => {
     </section>
   );
 };
-
-export default Feedback;
+export default Page;
